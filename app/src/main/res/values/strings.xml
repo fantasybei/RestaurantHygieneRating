@@ -6,6 +6,9 @@
     <string name="tab_text_3">Tab 3</string>
 
     <string name="about">About</string>
+
+    <string name="favorites">Favorites</string>
+
     <string name="title_activity_about">About</string>
 
     <string-array name="search_sort_options">
@@ -95,6 +98,7 @@ You can use this app to check the hygiene ratings for restaurants around the UK.
     <string name="adv_search_label_type">Type</string>
     <string name="adv_search_label_name">Name</string>
     <string name="adv_search_label_business">Business</string>
+    <string name="adv_search_label_business_type">Business Type</string>
     <string name="adv_search_hint_place">Enter an address or post code</string>
     <string name="adv_search_hint_name">Enter a business name</string>
     <string name="adv_search">Advanced Search</string>

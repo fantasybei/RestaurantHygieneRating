@@ -223,7 +223,8 @@ public class ListViewFragment extends Fragment {
                 sharedPreferences.edit().putInt("pageNumber", pageNumber).apply();
                 Intent intent = new Intent(getActivity(), ViewActivity.class);
                 intent.putExtra("search", sharedPreferences.getString("search", null));
-                startActivity(intent);
+                //startActivity(intent);
+                ((ViewActivity)getActivity()).goToPreviousPage();
             } else {
                 Toast.makeText(mContext, "It's the first page", Toast.LENGTH_SHORT).show();
             }
@@ -238,7 +239,8 @@ public class ListViewFragment extends Fragment {
                 sharedPreferences.edit().putInt("pageNumber", pageNumber).apply();
                 Intent intent = new Intent(getActivity(), ViewActivity.class);
                 intent.putExtra("search", sharedPreferences.getString("search", null));
-                startActivity(intent);
+                //startActivity(intent);
+                ((ViewActivity)getActivity()).goToNextPage();
             } else {
                 Toast.makeText(mContext, "It's the last page", Toast.LENGTH_SHORT).show();
             }
@@ -253,7 +255,8 @@ public class ListViewFragment extends Fragment {
                 sharedPreferences.edit().putInt("pageNumber", pageNumber).apply();
                 Intent intent = new Intent(getActivity(), ViewActivity.class);
                 intent.putExtra("search", sharedPreferences.getString("search", null));
-                startActivity(intent);
+                //startActivity(intent);
+                ((ViewActivity)getActivity()).goToFirstPage();
             } else {
                 Toast.makeText(mContext, "It's the first page", Toast.LENGTH_SHORT).show();
             }
@@ -268,7 +271,8 @@ public class ListViewFragment extends Fragment {
                 sharedPreferences.edit().putInt("pageNumber", pageNumber).apply();
                 Intent intent = new Intent(getActivity(), ViewActivity.class);
                 intent.putExtra("search", sharedPreferences.getString("search", null));
-                startActivity(intent);
+                //startActivity(intent);
+                ((ViewActivity)getActivity()).goToLastPage();
             } else {
                 Toast.makeText(mContext, "It's the last page", Toast.LENGTH_SHORT).show();
             }

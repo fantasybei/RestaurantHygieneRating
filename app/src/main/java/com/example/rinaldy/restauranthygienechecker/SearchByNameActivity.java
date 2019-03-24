@@ -1,16 +1,15 @@
 package com.example.rinaldy.restauranthygienechecker;
 
+import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
+import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,7 +23,7 @@ import com.android.volley.toolbox.StringRequest;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EstablishmentDetail extends AppCompatActivity {
+public class SearchByNameActivity extends AppCompatActivity {
 
     private Integer FHRSID;
     private Establishment establishment;
@@ -38,34 +37,35 @@ public class EstablishmentDetail extends AppCompatActivity {
 
     private boolean mIsInFavorite;
 
+    private SearchView mSearchView;
+
+
+    public static void start(Context context) {
+        Intent intent = new Intent(context, SearchByNameActivity.class);
+        context.startActivity(intent);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_establishment_detail);
+        setContentView(R.layout.activity_search_by_name);
+        mSearchView = findViewById(R.id.searchView);
+        mSearchView.setIconifiedByDefault(false);
 
-        if (getSupportActionBar() != null){
-            getSupportActionBar().setTitle("");
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
-        }
+//        if (getSupportActionBar() != null){
+//            getSupportActionBar().setTitle("");
+//            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//            getSupportActionBar().setDisplayShowHomeEnabled(true);
+//        }
 
-        businessName = (TextView) findViewById(R.id.establishment_item_name);
-        rating = (ImageView) findViewById(R.id.establishment_item_rating);
-
-        address = (TextView) findViewById(R.id.address);
-
-        FHRSID = getIntent().getIntExtra("establishmentID", -1);
-
-        mFavoriteManager = new FavoriteManager(this);
-        mIsInFavorite = mFavoriteManager.isEstablishmentInFavorites(FHRSID);
-        initialisePage();
+        //initialisePage();
     }
 
     private void showOnMap() {
         Double lat = establishment.getGeocode().getLatitude();
         Double lon = establishment.getGeocode().getLongitude();
         if (lat != null && lon != null) {
-            Intent intent = new Intent(EstablishmentDetail.this, DetailMapActivity.class);
+            Intent intent = new Intent(SearchByNameActivity.this, DetailMapActivity.class);
             intent.putExtra("est_name", establishment.getBusinessName());
             intent.putExtra("est_longitude", lon);
             intent.putExtra("est_latitude", lat);
@@ -126,7 +126,7 @@ public class EstablishmentDetail extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_details, menu);
         mMenu = menu;
-        seetFavoriteIcon();
+        //seetFavoriteIcon();
         return true;
     }
 

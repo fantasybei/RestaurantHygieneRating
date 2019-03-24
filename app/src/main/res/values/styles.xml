@@ -33,4 +33,27 @@
         <item name="android:textColorPrimary">@color/colorBlack</item>
         <item name="android:textColorSecondary">@color/colorBlack</item>
     </style>
+
+    <style name="popup_theme" parent="@style/ThemeOverlay.AppCompat.Light">
+        <!--设置背景-->
+        <!--<item name="android:background">@android:color/white</item>-->
+        <!--设置字体颜色-->
+        <!--<item name="android:textColor">@android:color/black</item>-->
+        <!--设置不覆盖锚点-->
+        <item name="overlapAnchor">false</item>
+    </style>
+
+    <style name="SearchViewStyle" parent="android:Theme.Holo.Light.DarkActionBar">
+        <!-- Gets rid of the search icon -->
+        <!--<item name="searchIcon">@drawable/ic_search</item>-->
+        <!-- Gets rid of the "underline" in the text -->
+        <!--<item name="queryBackground">@color/white</item>-->
+        <!-- Gets rid of the search icon when the SearchView is expanded -->
+        <!--<item name="searchHintIcon">@null</item>-->
+        <!-- The hint text that appears when the user has not typed anything -->
+        <!--<item name="queryHint">@string/search_hint</item>-->
+
+        <item name="android:textColorPrimary">#61000000</item>
+        <item name="android:textColorSecondary">#000000</item>
+    </style>
 </resources>

@@ -1,9 +1,10 @@
 package com.example.rinaldy.restauranthygienechecker;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.util.Date;
 
-public class Establishment {
+public class Establishment implements Serializable {
 
     private Integer FHRSID;
     private String BusinessName;
@@ -107,7 +108,7 @@ public class Establishment {
         return BusinessName;
     }
 
-    public class Geocode {
+    public class Geocode implements Serializable {
         Double longitude;
         Double latitude;
 

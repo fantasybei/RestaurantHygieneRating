@@ -1,6 +1,7 @@
 package com.example.rinaldy.restauranthygienechecker;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -30,6 +31,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -46,18 +48,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AdvancedSearchActivity extends AppCompatActivity {
+public class AdvancedSearchActivity extends AppCompatActivity implements View.OnClickListener {
     private final int FINE_LOCATION_PERMISSION = 1;
 
-    EditText mName;
-    EditText mPlace;
     EditText mRange;
     Spinner mBusinessTypeSpinner;
     Spinner mRegionSpinner;
     Spinner mAuthoritySpinner;
     Spinner mRatingSpinner;
     Spinner mRatingCompSpinner;
-    Switch mNearMeSwitch;
     TextView mPlaceLabel;
     TextView mRegionLabel;
     TextView mAuthorityLabel;
@@ -67,8 +66,8 @@ public class AdvancedSearchActivity extends AppCompatActivity {
     LocationManager locationManager;
     LocationListener locationListener;
 
-    private double longitude;
-    private double latitude;
+    private Double longitude;
+    private Double latitude;
     private int pageNumber = 1;
 
     private ArrayList<BusinessTypes.BusinessType> mBusinessTypes;
@@ -79,6 +78,19 @@ public class AdvancedSearchActivity extends AppCompatActivity {
 
     private ArrayList<Authorities.Authority> mAuthorities;
     private ArrayAdapter mAuthoritiesAdapter;
+
+    private SeekBar mSeekBar;
+    private TextView endDistanceTextView;
+    private int endDistance = 0;
+
+
+    public static void start(Activity context, double longitude, double latitude, int requestCode) {
+        Intent intent = new Intent(context, AdvancedSearchActivity.class);
+        intent.putExtra("longitude", longitude);
+        intent.putExtra("latitude", latitude);
+        context.startActivityForResult(intent, requestCode);
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,16 +106,18 @@ public class AdvancedSearchActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
 
-        this.mName = (EditText) findViewById(R.id.adv_search_name);
-        this.mPlace = (EditText) findViewById(R.id.adv_search_place);
+        longitude = (Double) getIntent().getSerializableExtra("longitude");
+
+        latitude = (Double) getIntent().getSerializableExtra("latitude");
+        //this.mPlace = (EditText) findViewById(R.id.adv_search_place);
         this.mRange = (EditText) findViewById(R.id.adv_search_range);
         this.mBusinessTypeSpinner = (Spinner) findViewById(R.id.adv_search_type);
         this.mRegionSpinner = (Spinner) findViewById(R.id.adv_search_region);
         this.mAuthoritySpinner = (Spinner) findViewById(R.id.adv_search_authority);
         this.mRatingSpinner = (Spinner) findViewById(R.id.adv_search_rating);
         this.mRatingCompSpinner = (Spinner) findViewById(R.id.adv_search_rating_comp);
-        this.mNearMeSwitch = (Switch) findViewById(R.id.adv_search_near_me);
-        this.mPlaceLabel = (TextView) findViewById(R.id.adv_search_label_place);
+        //this.mNearMeSwitch = (Switch) findViewById(R.id.adv_search_near_me);
+        //this.mPlaceLabel = (TextView) findViewById(R.id.adv_search_label_place);
         this.mRegionLabel = (TextView) findViewById(R.id.adv_search_label_region);
         this.mAuthorityLabel = (TextView) findViewById(R.id.adv_search_label_authority);
         this.mRangeLabel = (TextView) findViewById(R.id.adv_search_label_range);
@@ -133,7 +147,7 @@ public class AdvancedSearchActivity extends AppCompatActivity {
             }
         };
         this.pageNumber = getIntent().getIntExtra("pageNumber", 1);
-        mNearMeSwitch.setOnClickListener(nearMeSwitchListener); // also checks if location is enabled.
+        //mNearMeSwitch.setOnClickListener(nearMeSwitchListener); // also checks if location is enabled.
 
         initialiseBusinessType();
         initialiseRegions();
@@ -146,6 +160,36 @@ public class AdvancedSearchActivity extends AppCompatActivity {
 
         Button searchBtn = (Button) findViewById(R.id.adv_search_search_btn);
         searchBtn.setOnClickListener(searchBtnOnClick);
+
+
+
+        findViewById(R.id.score_one).setOnClickListener(this);
+        findViewById(R.id.score_two).setOnClickListener(this);
+        findViewById(R.id.score_three).setOnClickListener(this);
+        findViewById(R.id.score_four).setOnClickListener(this);
+        findViewById(R.id.score_five).setOnClickListener(this);
+
+        mSeekBar = findViewById(R.id.distance_seekbar);
+
+        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                endDistanceTextView.setText(String.valueOf(progress));
+                endDistance = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        endDistanceTextView = findViewById(R.id.end_distance);
     }
 
     public void initialiseBusinessType() {
@@ -269,31 +313,38 @@ public class AdvancedSearchActivity extends AppCompatActivity {
     }
 
     public String getURI() {
-        String URI = EndPoint.URLEstablishments + "?";
-        URI += Utils.checkURI("name", mName.getText().toString());
-        int bId = Utils.getBusinessTypeID(mBusinessTypesAdapter, mBusinessTypeSpinner.getSelectedItem().toString());
-        URI += mBusinessTypeSpinner.getSelectedItem() != null && bId > 0 ? "&businessTypeId=" + bId : "";
-        if (mNearMeSwitch.isChecked()) {
-            URI += Utils.checkURI("longitude", String.valueOf(longitude));
-            URI += Utils.checkURI("latitude", String.valueOf(latitude));
-            URI += Utils.checkURI("maxDistanceLimit", mRange.getText().toString());
-            URI += EndPoint.sortByDistance;
-        } else {
-            URI += Utils.checkURI("address", mPlace.getText().toString());
+        if (longitude != null && latitude != null) {
+            String URI = EndPoint.URLEstablishmentsByLocation(longitude, latitude);
+            //URI += Utils.checkURI("name", mName.getText().toString());
+            int bId = Utils.getBusinessTypeID(mBusinessTypesAdapter, mBusinessTypeSpinner.getSelectedItem().toString());
+            URI += mBusinessTypeSpinner.getSelectedItem() != null && bId > 0 ? "&businessTypeId=" + bId : "";
+//        if (mNearMeSwitch.isChecked()) {
+//            URI += Utils.checkURI("longitude", String.valueOf(longitude));
+//            URI += Utils.checkURI("latitude", String.valueOf(latitude));
+//            URI += Utils.checkURI("maxDistanceLimit", mRange.getText().toString());
+//            URI += EndPoint.sortByDistance;
+//        } else {
+            //URI += Utils.checkURI("address", mPlace.getText().toString());
             int aId = Utils.getLocalAuthorityID(mAuthoritiesAdapter, mAuthoritySpinner.getSelectedItem().toString());
             URI += mAuthoritySpinner.getSelectedItem() != null && aId > 0 ? "&localAuthorityId=" + aId : "";
+//        }
+            URI += Utils.checkSpinner("ratingKey", mRatingSpinner);
+            URI += Utils.checkSpinner("ratingOperatorKey", mRatingCompSpinner);
+            if (endDistance != 0) {
+                URI += "&maxDistanceLimit=" + endDistance;
+            }
+            Log.i("DEBUG", URI);
+            return URI;
+        } else {
+            return null;
         }
-        URI += Utils.checkSpinner("ratingKey", mRatingSpinner);
-        URI += Utils.checkSpinner("ratingOperatorKey", mRatingCompSpinner);
-        Log.i("DEBUG", URI);
-        return URI;
     }
 
     final View.OnClickListener clearBtnOnClick = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            mName.setText("");
-            mPlace.setText("");
+            //mName.setText("");
+            //mPlace.setText("");
             mRange.setText("");
             mBusinessTypeSpinner.setSelection(0);
             mRegionSpinner.setSelection(0);
@@ -311,7 +362,9 @@ public class AdvancedSearchActivity extends AppCompatActivity {
             intent.putExtra("title", "Advanced Search");
             intent.putExtra("search", getURI());
             intent.putExtra("firstOpen", true);
-            startActivity(intent);
+            setResult(RESULT_OK, intent);
+            finish();
+            //startActivity(intent);
         }
     };
 
@@ -331,27 +384,27 @@ public class AdvancedSearchActivity extends AppCompatActivity {
         }
     };
 
-    final View.OnClickListener nearMeSwitchListener = new View.OnClickListener() {
-        @Override
-        public void onClick(final View view) {
-            if (mNearMeSwitch.isChecked()) {
-                if (ContextCompat.checkSelfPermission(view.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
-                    requestLocationPermissions();
-                } else {
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, locationListener);
-                    Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    if (location != null) {
-                        longitude = location.getLongitude();
-                        latitude = location.getLatitude();
-                    }
-
-                    actionOnLocationEnabled();
-                }
-            } else {
-                toggleSwitches(false);
-            }
-        }
-    };
+//    final View.OnClickListener nearMeSwitchListener = new View.OnClickListener() {
+//        @Override
+//        public void onClick(final View view) {
+//            if (mNearMeSwitch.isChecked()) {
+//                if (ContextCompat.checkSelfPermission(view.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
+//                    requestLocationPermissions();
+//                } else {
+//                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, locationListener);
+//                    Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+//                    if (location != null) {
+//                        longitude = location.getLongitude();
+//                        latitude = location.getLatitude();
+//                    }
+//
+//                    actionOnLocationEnabled();
+//                }
+//            } else {
+//                toggleSwitches(false);
+//            }
+//        }
+//    };
 
     public void actionOnLocationEnabled() {
         if (isLocationServiceEnabled()) {
@@ -371,14 +424,14 @@ public class AdvancedSearchActivity extends AppCompatActivity {
                     .setCancelable(false)
                     .create()
                     .show();
-            mNearMeSwitch.setChecked(false);
+            //mNearMeSwitch.setChecked(false);
         }
     }
 
     public void toggleSwitches(boolean on) {
         if (on) {
-            mPlace.setVisibility(View.GONE);
-            mPlace.setText("");
+            //mPlace.setVisibility(View.GONE);
+            //mPlace.setText("");
             mPlaceLabel.setVisibility(View.GONE);
             mRegionSpinner.setVisibility(View.GONE);
             mRegionSpinner.setSelection(0);
@@ -397,7 +450,7 @@ public class AdvancedSearchActivity extends AppCompatActivity {
             mRangeLabel.setVisibility(View.GONE);
             mRangeMiles.setVisibility(View.GONE);
 
-            mPlace.setVisibility(View.VISIBLE);
+            //mPlace.setVisibility(View.VISIBLE);
             mPlaceLabel.setVisibility(View.VISIBLE);
             mRegionSpinner.setVisibility(View.VISIBLE);
             mRegionLabel.setVisibility(View.VISIBLE);
@@ -456,7 +509,7 @@ public class AdvancedSearchActivity extends AppCompatActivity {
                                     .setNegativeButton("I'm sure", new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
-                                            mNearMeSwitch.setChecked(false);
+                                            //mNearMeSwitch.setChecked(false);
                                         }
                                     })
                                     .setCancelable(false)
@@ -472,12 +525,6 @@ public class AdvancedSearchActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_about, menu);
-        return true;
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.about:
@@ -489,6 +536,18 @@ public class AdvancedSearchActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
 
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        int viewId = v.getId();
+        if (viewId == R.id.score_one || viewId == R.id.score_two || viewId == R.id.score_three || viewId == R.id.score_four || viewId == R.id.score_five) {
+            if (v.isSelected()) {
+                v.setSelected(false);
+            } else {
+                v.setSelected(true);
+            }
         }
     }
 }

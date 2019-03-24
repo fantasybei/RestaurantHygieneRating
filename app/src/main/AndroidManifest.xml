@@ -43,6 +43,18 @@
         <activity
             android:name=".DetailMapActivity"
             android:theme="@style/AppTheme"/>
+
+        <activity
+            android:name=".FavoritesActivity"
+            android:theme="@style/AppTheme"/>
+
+        <activity
+            android:name=".MapActivity"
+            android:theme="@style/AppTheme"/>
+
+        <activity
+            android:name=".SearchByNameActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>

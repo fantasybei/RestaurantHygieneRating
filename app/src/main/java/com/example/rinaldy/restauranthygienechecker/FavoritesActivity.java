@@ -1,17 +1,18 @@
 package com.example.rinaldy.restauranthygienechecker;
 
 import android.content.Intent;
-import android.net.Uri;
+import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,10 +22,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EstablishmentDetail extends AppCompatActivity {
+public class FavoritesActivity extends AppCompatActivity {
 
     private Integer FHRSID;
     private Establishment establishment;
@@ -38,10 +40,25 @@ public class EstablishmentDetail extends AppCompatActivity {
 
     private boolean mIsInFavorite;
 
+
+    private ListView mListView;
+    private CustomViewAdapter mListViewAdapter;
+    private ArrayList<Establishment> mEstablishments = new ArrayList<>();
+
+    final AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            Establishment clickedItem = mListViewAdapter.getItem(i);
+            Intent intent = new Intent(FavoritesActivity.this, EstablishmentDetail.class);
+            intent.putExtra("establishmentID", clickedItem.getFHRSID());
+            startActivity(intent);
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_establishment_detail);
+        setContentView(R.layout.activity_favorites);
 
         if (getSupportActionBar() != null){
             getSupportActionBar().setTitle("");
@@ -49,27 +66,35 @@ public class EstablishmentDetail extends AppCompatActivity {
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
 
-        businessName = (TextView) findViewById(R.id.establishment_item_name);
-        rating = (ImageView) findViewById(R.id.establishment_item_rating);
-
-        address = (TextView) findViewById(R.id.address);
-
-        FHRSID = getIntent().getIntExtra("establishmentID", -1);
-
         mFavoriteManager = new FavoriteManager(this);
-        mIsInFavorite = mFavoriteManager.isEstablishmentInFavorites(FHRSID);
-        initialisePage();
+        mEstablishments = mFavoriteManager.getFavorites();
+
+        mListViewAdapter = new CustomViewAdapter(this, mEstablishments);
+        mListView = (ListView) findViewById(R.id.favoriteList);
+        mListView.setOnItemClickListener(itemClickListener);
+        mListView.setAdapter(mListViewAdapter);
+
+//        businessName = (TextView) findViewById(R.id.establishment_item_name);
+//        rating = (ImageView) findViewById(R.id.establishment_item_rating);
+//
+//        address = (TextView) findViewById(R.id.address);
+//
+//        FHRSID = getIntent().getIntExtra("establishmentID", -1);
+//
+//        mFavoriteManager = new FavoriteManager(this);
+//        mIsInFavorite = mFavoriteManager.isEstablishmentInFavorites(FHRSID);
+//        initialisePage();
     }
 
     private void showOnMap() {
         Double lat = establishment.getGeocode().getLatitude();
         Double lon = establishment.getGeocode().getLongitude();
         if (lat != null && lon != null) {
-            Intent intent = new Intent(EstablishmentDetail.this, DetailMapActivity.class);
-            intent.putExtra("est_name", establishment.getBusinessName());
-            intent.putExtra("est_longitude", lon);
-            intent.putExtra("est_latitude", lat);
-            startActivity(intent);
+//            Intent intent = new Intent(EstablishmentDetail.this, DetailMapActivity.class);
+//            intent.putExtra("est_name", establishment.getBusinessName());
+//            intent.putExtra("est_longitude", lon);
+//            intent.putExtra("est_latitude", lat);
+//            startActivity(intent);
         } else {
             Toast.makeText(this, "Please try again.", Toast.LENGTH_SHORT);
         }
@@ -122,14 +147,6 @@ public class EstablishmentDetail extends AppCompatActivity {
         EndPoint.getInstance(this).addToRequestQueue(request);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_details, menu);
-        mMenu = menu;
-        seetFavoriteIcon();
-        return true;
-    }
-
     private void seetFavoriteIcon() {
         mIsInFavorite = mFavoriteManager.isEstablishmentInFavorites(FHRSID);
         if (mIsInFavorite) {
@@ -158,7 +175,4 @@ public class EstablishmentDetail extends AppCompatActivity {
 
         }
     }
-
-
-
 }

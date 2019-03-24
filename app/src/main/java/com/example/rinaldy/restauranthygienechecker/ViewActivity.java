@@ -30,6 +30,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -38,14 +39,16 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ViewActivity extends AppCompatActivity {
+public class ViewActivity extends AppCompatActivity implements View.OnClickListener {
     private final int FINE_LOCATION_PERMISSION = 1;
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
+    private static final int ADVANCED_SEARCH_REQUST_CODE = 101;
 
     SharedPreferences sharedPreferences;
 
@@ -60,6 +63,7 @@ public class ViewActivity extends AppCompatActivity {
     LocationListener locationListener;
     private double longitude;
     private double latitude;
+    private boolean located;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +84,7 @@ public class ViewActivity extends AppCompatActivity {
             public void onLocationChanged(Location location) {
                 longitude = location.getLongitude();
                 latitude = location.getLatitude();
+                located = true;
             }
 
             @Override
@@ -120,6 +125,9 @@ public class ViewActivity extends AppCompatActivity {
         }
 
         this.pageNumber = getIntent().getIntExtra("pageNumber", 1);
+
+        findViewById(R.id.filter).setOnClickListener(this);
+        findViewById(R.id.map).setOnClickListener(this);
     }
 
     public void initialiseApplication(String URL) {
@@ -134,6 +142,7 @@ public class ViewActivity extends AppCompatActivity {
                 if (location != null) {
                     longitude = location.getLongitude();
                     latitude = location.getLatitude();
+                    located = true;
                 }
                 String URL = EndPoint.URLEstablishmentsByLocation(longitude, latitude);
                 Log.i("DEBUG", URL);
@@ -226,6 +235,44 @@ public class ViewActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == ADVANCED_SEARCH_REQUST_CODE) {
+                String searchUrl = data.getStringExtra("search");
+                this.search = searchUrl;
+                this.pageNumber = 1;
+                new MyTask(this, search).execute();
+
+            }
+        }
+    }
+
+    public void goToPreviousPage() {
+        pageNumber = sharedPreferences.getInt("pageNumber", 1);
+        this.search = sharedPreferences.getString("search", null);
+        new MyTask(this, search).execute();
+    }
+
+    public void goToNextPage() {
+        pageNumber = sharedPreferences.getInt("pageNumber", 1);
+        this.search = sharedPreferences.getString("search", null);
+        new MyTask(this, search).execute();
+    }
+
+    public void goToFirstPage() {
+        pageNumber = sharedPreferences.getInt("pageNumber", 1);
+        this.search = sharedPreferences.getString("search", null);
+        new MyTask(this, search).execute();
+    }
+
+    public void goToLastPage() {
+        pageNumber = sharedPreferences.getInt("pageNumber", 1);
+        this.search = sharedPreferences.getString("search", null);
+        new MyTask(this, search).execute();
+    }
+
+    @Override
     public void onBackPressed() {
         Log.i("VIEW", "back pressed, pagenum: " + pageNumber);
         super.onBackPressed();
@@ -234,21 +281,39 @@ public class ViewActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_view, menu);
+        setIconsVisible(menu,true);
         return true;
+    }
+
+    private void setIconsVisible(Menu menu, boolean flag) {
+        //判断menu是否为空
+        if(menu != null) {
+            try {
+                //如果不为空,就反射拿到menu的setOptionalIconsVisible方法
+                Method method = menu.getClass().getDeclaredMethod("setOptionalIconsVisible", Boolean.TYPE);
+                //暴力访问该方法
+                method.setAccessible(true);
+                //调用该方法显示icon
+                method.invoke(menu, flag);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.about: {
-                Intent intent = new Intent(ViewActivity.this, AboutActivity.class);
+            case R.id.favorites: {
+                Intent intent = new Intent(ViewActivity.this, FavoritesActivity.class);
                 startActivity(intent);
                 return true;
             }
             case R.id.search: {
                 Intent intent = new Intent(ViewActivity.this, SearchActivity.class);
                 intent.putExtra("search_title", title);
-                startActivity(intent);
+                //startActivity(intent);
+                //SearchByNameActivity.start(this);
                 return true;
             }
             case android.R.id.home: {
@@ -257,6 +322,20 @@ public class ViewActivity extends AppCompatActivity {
             default: {
                 return super.onOptionsItemSelected(item);
             }
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        int viewId = v.getId();
+        if (viewId == R.id.filter) {
+            if (located) {
+                AdvancedSearchActivity.start(this, longitude, latitude, ADVANCED_SEARCH_REQUST_CODE);
+            } else {
+                Snackbar.make(findViewById(android.R.id.content), "Wait for current location", Snackbar.LENGTH_LONG).show();
+            }
+        } else if (viewId == R.id.map) {
+            MapActivity.start(this, mEstablishments);
         }
     }
 
@@ -329,17 +408,21 @@ public class ViewActivity extends AppCompatActivity {
 
                             if (!failed) {
                                 activity.get().sharedPreferences.edit().putInt("pageNumber", pageNumber).apply();
-                                activity.get().mViewPager = (ViewPager) activity.get().findViewById(R.id.container);
-                                activity.get().mViewPager.setAdapter(activity.get().mSectionsPagerAdapter);
+                                //activity.get().mViewPager = (ViewPager) activity.get().findViewById(R.id.container);
+                                //activity.get().mViewPager.setAdapter(activity.get().mSectionsPagerAdapter);
 
-                                TabLayout tabLayout = (TabLayout) activity.get().findViewById(R.id.tabs);
+                                //TabLayout tabLayout = (TabLayout) activity.get().findViewById(R.id.tabs);
 
-                                activity.get().mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-                                tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(activity.get().mViewPager));
-
+                                //activity.get().mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+                                //tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(activity.get().mViewPager));
+                                ListViewFragment lvf = new ListViewFragment();
+                                lvf.initialiseList(activity.get().mEstablishments, activity.get().mMeta);
+                                FragmentManager fm = activity.get().getSupportFragmentManager();
+                                fm.beginTransaction().add(R.id.establishment_list, lvf).commit();
                                 if (dialog.isShowing()) {
                                     dialog.dismiss();
                                 }
+
                             } else {
                                 Log.e("DEBUG", "One of the request has failed");
                             }
