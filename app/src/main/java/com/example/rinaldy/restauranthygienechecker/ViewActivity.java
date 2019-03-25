@@ -140,8 +140,8 @@ public class ViewActivity extends AppCompatActivity implements View.OnClickListe
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, locationListener);
                 Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                 if (location != null) {
-                    longitude = location.getLongitude();
-                    latitude = location.getLatitude();
+                    longitude = -1.930497;//location.getLongitude();
+                    latitude = 52.450804;//location.getLatitude();
                     located = true;
                 }
                 String URL = EndPoint.URLEstablishmentsByLocation(longitude, latitude);
@@ -164,8 +164,8 @@ public class ViewActivity extends AppCompatActivity implements View.OnClickListe
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            Intent intent = new Intent(ViewActivity.this, SearchActivity.class);
-                            startActivity(intent);
+                            //Intent intent = new Intent(ViewActivity.this, SearchActivity.class);
+                            //startActivity(intent);
                         }
                     })
                     .create()
@@ -439,8 +439,8 @@ public class ViewActivity extends AppCompatActivity implements View.OnClickListe
                             new Handler().postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Intent intent = new Intent(activity.get(), SearchActivity.class);
-                                    activity.get().startActivity(intent);
+                                    //Intent intent = new Intent(activity.get(), SearchActivity.class);
+                                    //activity.get().startActivity(intent);
                                 }
                             }, 1000);
                         }

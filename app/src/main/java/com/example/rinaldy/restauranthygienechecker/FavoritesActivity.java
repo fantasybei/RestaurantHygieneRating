@@ -7,6 +7,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -61,18 +63,30 @@ public class FavoritesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_favorites);
 
         if (getSupportActionBar() != null){
-            getSupportActionBar().setTitle("");
+            getSupportActionBar().setTitle("My Favorites");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
 
         mFavoriteManager = new FavoriteManager(this);
         mEstablishments = mFavoriteManager.getFavorites();
+        mListView = (ListView) findViewById(R.id.favoriteList);
+
+
+        if (mEstablishments == null) {
+            mListView.setVisibility(View.GONE);
+            findViewById(R.id.tv_no_data).setVisibility(View.VISIBLE);
+            mEstablishments = new ArrayList<>();
+        } else {
+            mListView.setVisibility(View.VISIBLE);
+            findViewById(R.id.tv_no_data).setVisibility(View.GONE);
+        }
 
         mListViewAdapter = new CustomViewAdapter(this, mEstablishments);
-        mListView = (ListView) findViewById(R.id.favoriteList);
         mListView.setOnItemClickListener(itemClickListener);
         mListView.setAdapter(mListViewAdapter);
+
+        registerForContextMenu(mListView);
 
 //        businessName = (TextView) findViewById(R.id.establishment_item_name);
 //        rating = (ImageView) findViewById(R.id.establishment_item_rating);
@@ -84,6 +98,28 @@ public class FavoritesActivity extends AppCompatActivity {
 //        mFavoriteManager = new FavoriteManager(this);
 //        mIsInFavorite = mFavoriteManager.isEstablishmentInFavorites(FHRSID);
 //        initialisePage();
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        if (v == mListView) {
+            menu.add(0, 0, 0, "Delete");
+        }
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+
+        AdapterView.AdapterContextMenuInfo menuInfo = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        Log.e("dd", String.valueOf(menuInfo.position));
+        if (menuInfo.position >= 0) {
+            Establishment establishment = mListViewAdapter.getItem(menuInfo.position);
+            mFavoriteManager.removeFromFavorites(establishment);
+            mListViewAdapter.remove(establishment);
+        }
+
+        return super.onContextItemSelected(item);
     }
 
     private void showOnMap() {
@@ -174,5 +210,11 @@ public class FavoritesActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
 
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterForContextMenu(mListView);
     }
 }

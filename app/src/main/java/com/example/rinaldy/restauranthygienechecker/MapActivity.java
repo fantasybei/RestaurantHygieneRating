@@ -42,7 +42,7 @@ public class MapActivity extends AppCompatActivity {
         setContentView(R.layout.activity_map);
 
         if (getSupportActionBar() != null){
-            getSupportActionBar().setTitle("");
+            getSupportActionBar().setTitle("Map");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }

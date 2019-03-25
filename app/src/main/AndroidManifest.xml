@@ -32,7 +32,7 @@
             android:name=".AdvancedSearchActivity"
             android:label="@string/adv_search"
             android:parentActivityName=".SearchActivity"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/Dark" />
         <activity
             android:name=".AboutActivity"
             android:label="About"
