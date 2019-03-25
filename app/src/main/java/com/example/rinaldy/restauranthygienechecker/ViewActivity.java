@@ -140,8 +140,8 @@ public class ViewActivity extends AppCompatActivity implements View.OnClickListe
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, locationListener);
                 Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                 if (location != null) {
-                    longitude = -1.930497;//location.getLongitude();
-                    latitude = 52.450804;//location.getLatitude();
+                    longitude = location.getLongitude();
+                    latitude = location.getLatitude();
                     located = true;
                 }
                 String URL = EndPoint.URLEstablishmentsByLocation(longitude, latitude);
