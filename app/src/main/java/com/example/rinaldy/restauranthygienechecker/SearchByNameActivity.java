@@ -52,11 +52,11 @@ public class SearchByNameActivity extends AppCompatActivity {
         mSearchView = findViewById(R.id.searchView);
         mSearchView.setIconifiedByDefault(false);
 
-//        if (getSupportActionBar() != null){
-//            getSupportActionBar().setTitle("");
-//            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-//            getSupportActionBar().setDisplayShowHomeEnabled(true);
-//        }
+        if (getSupportActionBar() != null){
+            getSupportActionBar().setTitle("");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
 
         //initialisePage();
     }
