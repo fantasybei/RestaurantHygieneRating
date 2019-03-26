@@ -68,7 +68,7 @@ public class ListViewFragment extends Fragment {
         mListView.setOnItemClickListener(itemClickListener);
         mListView.setAdapter(mListViewAdapter);
 
-        String statusMessage = mMeta.getTotalCount() > 0 ? ("There are " + mMeta.getTotalCount() + " establishments found. Page " + pageNumber + " of " + mMeta.getTotalPages() + ".") : "No results found.";
+        String statusMessage = (mMeta != null && mMeta.getTotalCount() > 0) ? ("There are " + mMeta.getTotalCount() + " establishments found. Page " + pageNumber + " of " + mMeta.getTotalPages() + ".") : "No results found.";
         status.setText(statusMessage);
 
         if (!mListViewAdapter.isEmpty()) {

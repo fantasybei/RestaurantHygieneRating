@@ -55,6 +55,10 @@
         <activity
             android:name=".SearchByNameActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
+
+        <activity
+            android:name=".SearchByLocationActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>

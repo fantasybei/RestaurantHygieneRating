@@ -7,41 +7,49 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Rect;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.TextView;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ViewActivity extends AppCompatActivity implements View.OnClickListener {
@@ -64,11 +72,16 @@ public class ViewActivity extends AppCompatActivity implements View.OnClickListe
     private double longitude;
     private double latitude;
     private boolean located;
+    private Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view);
+
+        Places.initialize(getApplicationContext(), "AIzaSyDCnf-EihrtFVkWU0Gqkh9av6eZh6AIIDI");
+        PlacesClient placesClient = Places.createClient(this);
+
 
         sharedPreferences = getPreferences(Context.MODE_PRIVATE);
         if (getIntent().getBooleanExtra("firstOpen", false)) {
@@ -103,14 +116,51 @@ public class ViewActivity extends AppCompatActivity implements View.OnClickListe
             }
         };
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
         this.title = getIntent().getStringExtra("title");
         if (title == null) {
             title = "Nearby";
         }
-        toolbar.setTitle(title);
-        setSupportActionBar(toolbar);
-        toolbar.setTitleTextColor(getResources().getColor(R.color.colorPrimaryLight));
+        mToolbar.setTitle(title);
+        mToolbar.setOnTouchListener(new View.OnTouchListener() {
+            Rect hitrect = new Rect();
+            public boolean onTouch(View v, MotionEvent event) {
+                if (MotionEvent.ACTION_DOWN == event.getAction()) {
+                    boolean hit = false;
+                    for (int i = mToolbar.getChildCount() - 1; i != -1; i--) {
+                        View view = mToolbar.getChildAt(i);
+                        if (view instanceof TextView) {
+                            view.getHitRect(hitrect);
+                            if (hitrect.contains((int)event.getX(), (int)event.getY())) {
+                                hit = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (hit) {
+                        //Hit action
+                        //SearchByLocationActivity.start(ViewActivity.this);
+//                        PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+//
+//                        try {
+//                            startActivityForResult(builder.build(ViewActivity.this), 101);
+//                        } catch(GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
+//                            e.printStackTrace();
+//                        }
+                        List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG);
+                        Intent intent = new Autocomplete.IntentBuilder(
+                                AutocompleteActivityMode.FULLSCREEN, fields)
+                                .build(ViewActivity.this);
+                        startActivityForResult(intent, 3);
+
+                    }
+                }
+                return false;
+            }
+        });
+        setSupportActionBar(mToolbar);
+        mToolbar.setTitleTextColor(getResources().getColor(R.color.colorPrimaryLight));
+
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         this.search = getIntent().getStringExtra("search");
@@ -140,8 +190,8 @@ public class ViewActivity extends AppCompatActivity implements View.OnClickListe
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, locationListener);
                 Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                 if (location != null) {
-                    longitude = location.getLongitude();
-                    latitude = location.getLatitude();
+                    longitude = -1.930497;//location.getLongitude();
+                    latitude = 52.450804;//location.getLatitude();
                     located = true;
                 }
                 String URL = EndPoint.URLEstablishmentsByLocation(longitude, latitude);
@@ -244,6 +294,19 @@ public class ViewActivity extends AppCompatActivity implements View.OnClickListe
                 this.pageNumber = 1;
                 new MyTask(this, search).execute();
 
+            } else if (requestCode == 3) {
+                Place place = Autocomplete.getPlaceFromIntent(data);
+                Log.i("ddd", "Place: " + place.getName() + ", " + place.getId() + "," + place.getLatLng());
+                if (place != null) {
+                    mToolbar.setTitle(place.getName());
+                    longitude = place.getLatLng().longitude;
+                    latitude = place.getLatLng().latitude;
+                    pageNumber = 1;
+                    String URL = EndPoint.URLEstablishmentsByLocation(longitude, latitude);
+                    Log.i("DEBUG", URL);
+                    initialiseApplication(URL);
+                }
+
             }
         }
     }
@@ -313,7 +376,9 @@ public class ViewActivity extends AppCompatActivity implements View.OnClickListe
                 Intent intent = new Intent(ViewActivity.this, SearchActivity.class);
                 intent.putExtra("search_title", title);
                 //startActivity(intent);
-                //SearchByNameActivity.start(this);
+                SearchByNameActivity.start(this);
+                Log.e("dddd", "search icon clicked");
+
                 return true;
             }
             case android.R.id.home: {

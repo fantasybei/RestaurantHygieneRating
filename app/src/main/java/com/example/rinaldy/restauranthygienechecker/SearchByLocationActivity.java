@@ -6,10 +6,7 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,13 +20,10 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class SearchByNameActivity extends AppCompatActivity {
+public class SearchByLocationActivity extends AppCompatActivity {
 
     private Integer FHRSID;
     private Establishment establishment;
@@ -45,12 +39,9 @@ public class SearchByNameActivity extends AppCompatActivity {
 
     private SearchView mSearchView;
 
-    private RecyclerView mRecyclerView;
-
-    private ItemAdapter mItemAdapter;
 
     public static void start(Context context) {
-        Intent intent = new Intent(context, SearchByNameActivity.class);
+        Intent intent = new Intent(context, SearchByLocationActivity.class);
         context.startActivity(intent);
     }
 
@@ -60,37 +51,6 @@ public class SearchByNameActivity extends AppCompatActivity {
         setContentView(R.layout.activity_search_by_name);
         mSearchView = findViewById(R.id.searchView);
         mSearchView.setIconifiedByDefault(false);
-        mRecyclerView = findViewById(R.id.recyclerview);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mItemAdapter = new ItemAdapter(this, new ArrayList<Establishment>());
-        mRecyclerView.setAdapter(mItemAdapter);
-
-        mItemAdapter.setListener(new ItemAdapter.OnEstablishmentClickListener() {
-            @Override
-            public void onEstablishmentClicked(Establishment e) {
-                Intent intent = new Intent(SearchByNameActivity.this, EstablishmentDetail.class);
-                intent.putExtra("establishmentID", e.getFHRSID());
-                startActivity(intent);
-                finish();
-            }
-        });
-
-        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                if (!TextUtils.isEmpty(newText)) {
-                    initialisePage(newText);
-                } else {
-                    mItemAdapter.clear();
-                }
-                return false;
-            }
-        });
 
         if (getSupportActionBar() != null){
             getSupportActionBar().setTitle("");
@@ -105,7 +65,7 @@ public class SearchByNameActivity extends AppCompatActivity {
         Double lat = establishment.getGeocode().getLatitude();
         Double lon = establishment.getGeocode().getLongitude();
         if (lat != null && lon != null) {
-            Intent intent = new Intent(SearchByNameActivity.this, DetailMapActivity.class);
+            Intent intent = new Intent(SearchByLocationActivity.this, DetailMapActivity.class);
             intent.putExtra("est_name", establishment.getBusinessName());
             intent.putExtra("est_longitude", lon);
             intent.putExtra("est_latitude", lat);
@@ -115,47 +75,31 @@ public class SearchByNameActivity extends AppCompatActivity {
         }
     }
 
-    public class Result implements Serializable {
-        private List<Establishment> establishments;
-
-        public List<Establishment> getEstablishments() {
-            return establishments;
-        }
-
-        public void setEstablishments(List<Establishment> establishments) {
-            this.establishments = establishments;
-        }
-    }
-
-    public void initialisePage(String searchText) {
-        String url = EndPoint.URLEstablishmentByName(searchText, "");
+    public void initialisePage() {
+        String url = EndPoint.URLEstablishmentByID(FHRSID);
         StringRequest request = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        Result result = GsonUtils.getInstance().getGson().fromJson(response, Result.class);
+                        establishment = GsonUtils.getInstance().getGson().fromJson(response, Establishment.class);
 
-                        if (result.getEstablishments().size() > 0) {
+                        businessName.setText(Utils.check(establishment.getBusinessName()));
+                        String date = "Date Awarded: " + (establishment.getHumanlyDate().isEmpty() ? "Not Specified" : establishment.getHumanlyDate());
+                        rating.setBackgroundResource(Utils.getRatingImage(establishment));
 
-                            mItemAdapter.addGirlList(result.getEstablishments());
+                        address.setText(String.format("%s", establishment.getFullAddress("\n")));
+
+                        Double lat = establishment.getGeocode().getLatitude();
+                        Double lon = establishment.getGeocode().getLongitude();
+                        if (lat != null && lon != null) {
+
+                            address.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    showOnMap();
+                                }
+                            });
                         }
-//                        businessName.setText(Utils.check(establishment.getBusinessName()));
-//                        String date = "Date Awarded: " + (establishment.getHumanlyDate().isEmpty() ? "Not Specified" : establishment.getHumanlyDate());
-//                        rating.setBackgroundResource(Utils.getRatingImage(establishment));
-//
-//                        address.setText(String.format("%s", establishment.getFullAddress("\n")));
-//
-//                        Double lat = establishment.getGeocode().getLatitude();
-//                        Double lon = establishment.getGeocode().getLongitude();
-//                        if (lat != null && lon != null) {
-//
-//                            address.setOnClickListener(new View.OnClickListener() {
-//                                @Override
-//                                public void onClick(View view) {
-//                                    showOnMap();
-//                                }
-//                            });
-//                        }
                     }
                 },
                 new Response.ErrorListener() {
