@@ -54,7 +54,11 @@ public class CustomViewAdapter extends ArrayAdapter<Establishment> implements Fi
         viewHolder.name.setText(e.getBusinessName());
         viewHolder.address.setText(e.getFullAddress(", "));
         viewHolder.distance.setText(Utils.getDistanceText(e));
-        viewHolder.image.setBackgroundResource(Utils.getRatingIcon(e));
+        if (Utils.getRatingIcon(e) == R.drawable.rating_exempt) {
+            viewHolder.image.setBackground(null);
+        } else {
+            viewHolder.image.setBackgroundResource(Utils.getRatingIcon(e));
+        }
 
         return convertView;
     }

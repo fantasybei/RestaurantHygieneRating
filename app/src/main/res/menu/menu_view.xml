@@ -11,7 +11,7 @@
     <item
         android:id="@+id/favorites"
         android:orderInCategory="101"
-        android:title="@string/favorites"
+        android:title=""
         android:icon="@drawable/icon_bookmark_option_menu"
         app:showAsAction="never" />
 </menu>

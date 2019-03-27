@@ -32,7 +32,7 @@
     <color name="colorPink400">#EC407A</color>
     <color name="colorPink600">#d81b60</color>
 
-    <color name="colorGrey300">#EEEEEE</color>
+    <color name="colorGrey300">#ffffff</color>
     <color name="colorGrey500">#9E9E9E</color>
     <color name="colorGrey900">#212121</color>
     <color name="colorBlack">#000000</color>

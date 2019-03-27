@@ -14,6 +14,11 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="actionMenuTextColor">#000000</item>
+    </style>
+
+    <style name="MenuTextStyle">
+        <item name="actionMenuTextColor">#000000</item>
     </style>
 
     <style name="AppTheme.About" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -64,10 +69,14 @@
     <style name="AppTheme.Toolbar" parent="AppTheme">
         <item name="overlapAnchor">false</item>
         <!--This line changes the color of text in Toolbar-->
-        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:textColorPrimary">@android:color/black</item>
         <!--This line changes the color of icons in toolbar (back, overflow menu icons)-->
         <!--<item name="android:textColorSecondary">@color/green</item>-->
 
         <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="AppTheme.ActionBar" parent="Theme.AppCompat.Light">
+        <item name="actionMenuTextColor">#000000</item>
     </style>
 </resources>

@@ -23,7 +23,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ViewActivity" />
+        <activity
+            android:theme="@style/AppTheme.NoActionBar"
+            android:name=".ViewActivity" />
         <activity
             android:name=".SearchActivity"
             android:label="Search Result"
